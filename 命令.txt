@@ -1,2 +1,7 @@
 启动博客的命令：在当前目录下的cmd窗口内输入npx --node=20 astro dev
 创建新文章的命令：npm run new-post "你的文章标题"
+更新博客：
+1.在本地编辑md文件
+2.git add .
+3.git commit -m "更新文章"
+4.git push
