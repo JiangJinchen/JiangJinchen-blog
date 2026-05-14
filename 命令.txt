@@ -1,0 +1,2 @@
+启动博客的命令：在当前目录下的cmd窗口内输入npx --node=20 astro dev
+创建新文章的命令：npm run new-post "你的文章标题"
