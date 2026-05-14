@@ -1,2 +1,2 @@
-# JiangJinchen-s-blog
+# JiangJinchen-blog
 Record My Spark Ideas.
