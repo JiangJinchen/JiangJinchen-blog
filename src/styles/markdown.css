@@ -1,33 +1,55 @@
 .custom-md {
     h1 {
-        @apply text-3xl;
+        font-size: 1.875rem; /* text-3xl equivalent */
+        line-height: 2.25rem;
     }
 
     h1, h2, h3, h4, h5, h6 {
         .anchor {
-            @apply transition -m-0.5 ml-[0.2ch] p-0.5 select-none opacity-0 no-underline !important;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+            margin: -0.125rem;
+            margin-left: 0.2ch;
+            padding: 0.125rem;
+            user-select: none;
+            opacity: 0;
+            text-decoration: none !important;
 
             .anchor-icon {
-                @apply mx-[0.45ch] !important;
+                margin-left: 0.45ch;
+                margin-right: 0.45ch !important;
             }
         }
 
         &:hover {
             .anchor {
-                @apply opacity-100 !important;
+                opacity: 1 !important;
             }
         }
     }
 
     a:not(.no-styling) {
-        @apply relative bg-none link font-medium text-[var(--primary)]
-        underline decoration-[var(--link-underline)] decoration-1 decoration-dashed underline-offset-4;
+        position: relative;
+        background: none;
+        font-weight: 500;
+        color: var(--primary);
+        text-decoration: underline;
+        text-decoration-color: var(--link-underline);
+        text-decoration-thickness: 1px;
+        text-decoration-style: dashed;
+        text-underline-offset: 4px;
+        text-decoration: underline;
+        text-decoration-color: var(--link-underline);
+        text-decoration-thickness: 1px;
+        text-decoration-style: dashed;
+        text-underline-offset: 4px;
         box-decoration-break: clone;
         -webkit-box-decoration-break: clone;
         display: inline-block;
     
         &:hover, &:active {
-            @apply decoration-transparent;
+            text-decoration-color: transparent;
             background: var(--btn-plain-bg-hover);
             border-bottom: 1px dashed var(--link-hover);
             text-decoration: none;
@@ -35,7 +57,14 @@
     }
 
     code {
-        @apply bg-[var(--inline-code-bg)] text-[var(--inline-code-color)] px-1 py-0.5 rounded-md overflow-hidden;
+        background-color: var(--inline-code-bg);
+        color: var(--inline-code-color);
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+        padding-top: 0.125rem;
+        padding-bottom: 0.125rem;
+        border-radius: 0.375rem;
+        overflow: hidden;
 
         font-family: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
         &:before {
@@ -48,7 +77,10 @@
         counter-reset: line;
         span.line {
             &:before {
-                @apply text-white/25 mr-4 w-4 inline-block;
+                color: rgba(255, 255, 255, 0.25);
+                margin-right: 1rem;
+                width: 1rem;
+                display: inline-block;
                 content: counter(line);
                 counter-increment: line;
                 direction: rtl;
@@ -61,53 +93,97 @@
 
     .copy-btn {
         all: initial;
-        @apply btn-regular-dark opacity-0 shadow-lg shadow-black/50 absolute active:scale-90 h-8 w-8 top-3 right-3 text-sm rounded-lg transition-all ease-in-out z-20 cursor-pointer;
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        height: 2rem;
+        width: 2rem;
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
+        z-index: 20;
+        cursor: pointer;
+        opacity: 0;
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+        background-color: var(--btn-regular-bg);
+        color: var(--btn-regular-text);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     }
     .frame:hover .copy-btn {
         opacity: 1;
     }
 
     .copy-btn-icon {
-        @apply absolute top-1/2 left-1/2 transition -translate-x-1/2 -translate-y-1/2 w-4 h-4 fill-white pointer-events-none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+        transform: translate(-50%, -50%);
+        width: 1rem;
+        height: 1rem;
+        fill: white;
+        pointer-events: none;
     }
     .copy-btn .copy-icon {
-        @apply opacity-100 fill-white dark:fill-white/75;
+        opacity: 1;
+        fill: white;
+        @media (prefers-color-scheme: dark) {
+            fill: rgba(255, 255, 255, 0.75);
+        }
     }
     .copy-btn.success .copy-icon {
-        @apply opacity-0 fill-[var(--deep-text)]
+        opacity: 0;
+        fill: var(--deep-text);
     }
     .copy-btn .success-icon {
-        @apply opacity-0 fill-white;
+        opacity: 0;
+        fill: white;
     }
     .copy-btn.success .success-icon {
-        @apply opacity-100
+        opacity: 1;
     }
 
     .expressive-code {
-        @apply my-4;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
         ::selection {
-            @apply bg-[var(--codeblock-selection)];
+            background-color: var(--codeblock-selection);
         }
     }
 
 
     ul, ol {
         li::marker {
-            @apply text-[var(--primary)];
+            color: var(--primary);
         }
     }
 
     blockquote {
-        @apply not-italic border-transparent relative;
+        font-style: normal;
+        border-color: transparent;
+        position: relative;
         font-weight: inherit;
 
         &:before {
-            @apply content-[''] absolute -left-1 block transition bg-[var(--btn-regular-bg)] h-full w-1 rounded-full;
+            content: '';
+            position: absolute;
+            left: -0.25rem;
+            display: block;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+            background-color: var(--btn-regular-bg);
+            height: 100%;
+            width: 0.25rem;
+            border-radius: 9999px;
         }
 
         /* Remove the double quotes from default styles */
         p:before, p:after {
-            @apply content-none;
+            content: none;
         }
 
     }
