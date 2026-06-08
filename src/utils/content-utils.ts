@@ -78,6 +78,7 @@ export type Category = {
 	url: string;
 	level: number;
 	parent?: string;
+	fullPath: string;
 };
 
 export async function getCategoryList(): Promise<Category[]> {
@@ -89,6 +90,13 @@ export async function getCategoryList(): Promise<Category[]> {
 	allBlogPosts.forEach((post) => {
 		const category = post.data.category ?? i18n(I18nKey.uncategorized);
 		count[category] = (count[category] ?? 0) + 1;
+
+		// 同时统计父分类的数量
+		const parts = category.split("/");
+		for (let i = 1; i < parts.length; i++) {
+			const parentPath = parts.slice(0, i).join("/");
+			count[parentPath] = (count[parentPath] ?? 0) + 1;
+		}
 	});
 
 	const lst = Object.keys(count).sort((a, b) =>
@@ -99,12 +107,45 @@ export async function getCategoryList(): Promise<Category[]> {
 	for (const c of lst) {
 		const parts = c.split("/");
 		ret.push({
-			name: c,
+			name: parts[parts.length - 1],
 			count: count[c],
 			url: getCategoryUrl(c),
 			level: parts.length,
-			parent: parts.length > 1 ? parts[0] : undefined,
+			parent: parts.length > 1 ? parts.slice(0, -1).join("/") : undefined,
+			fullPath: c,
 		});
 	}
 	return ret;
+}
+
+export type CategoryTreeNode = Category & {
+	children?: CategoryTreeNode[];
+};
+
+export async function getCategoryTree(): Promise<CategoryTreeNode[]> {
+	const categories = await getCategoryList();
+	const categoryMap = new Map<string, CategoryTreeNode>();
+	const rootCategories: CategoryTreeNode[] = [];
+
+	categories.forEach((cat) => {
+		categoryMap.set(cat.fullPath, { ...cat, children: [] });
+	});
+
+	categories.forEach((cat) => {
+		const node = categoryMap.get(cat.fullPath);
+		if (!node) return;
+		if (cat.parent && categoryMap.has(cat.parent)) {
+			const parentNode = categoryMap.get(cat.parent);
+			if (!parentNode) {
+				rootCategories.push(node);
+				return;
+			}
+			if (!parentNode.children) parentNode.children = [];
+			parentNode.children.push(node);
+		} else {
+			rootCategories.push(node);
+		}
+	});
+
+	return rootCategories;
 }

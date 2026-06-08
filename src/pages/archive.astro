@@ -14,7 +14,7 @@ const allTags = await getTagList();
 const allCategories = await getCategoryList();
 
 const tagNames = allTags.map((t) => t.name);
-const categoryNames = allCategories.map((c) => c.name);
+const categoryNames = allCategories.map((c) => c.fullPath);
 
 const fixedPosts = sortedPostsList.map((post) => ({
 	...post,

@@ -1,0 +1,28 @@
+---
+import type { CategoryTreeNode } from "../../utils/content-utils";
+import ButtonLink from "../control/ButtonLink.astro";
+
+interface Props {
+	categories: CategoryTreeNode[];
+	level?: number;
+}
+
+const categories = Astro.props.categories;
+const level = Astro.props.level ?? 0;
+---
+
+{categories.map((cat) => (
+	<div class="category-item">
+		<ButtonLink
+			url={cat.url}
+			badge={String(cat.count)}
+			label={`View all posts in the ${cat.fullPath} category`}
+			style={{ paddingLeft: `${level * 1rem}`, textIndent: '-0.5rem', paddingLeft: `${level * 1rem + 0.5rem}` }}
+		>
+			{cat.name}
+		</ButtonLink>
+		{cat.children && cat.children.length > 0 && (
+			<CategoryTree categories={cat.children} level={level + 1} />
+		)}
+	</div>
+))}

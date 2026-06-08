@@ -8,3 +8,6 @@
 
 写文章的注意事项：
 1.想写分类，category:"xxx"；不想写，直接删掉这一行
+
+npx biome check --write --unsafe ./src
+自动修复格式错误
