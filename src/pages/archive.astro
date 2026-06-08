@@ -12,8 +12,6 @@ import {
 const sortedPostsList = await getSortedPostsList();
 const allTags = await getTagList();
 const allCategories = await getCategoryList();
-const topCategories = allCategories.filter((c) => c.level === 1);
-const subCategories = allCategories.filter((c) => c.level === 2);
 
 const tagNames = allTags.map((t) => t.name);
 const categoryNames = allCategories.map((c) => c.name);
@@ -31,8 +29,7 @@ const fixedPosts = sortedPostsList.map((post) => ({
   <ArchivePanel
     sortedPosts={fixedPosts}
 	tags={tagNames}
-	topCategories={topCategories}
-	subCategories={subCategories}
+	categories={categoryNames}
 	client:only="svelte"
   />
 </MainGridLayout>
