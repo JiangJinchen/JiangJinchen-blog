@@ -23,5 +23,12 @@ const style = Astro.props.style;
 <WidgetLayout name={i18n(I18nKey.categories)} id="categories" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT}
                 class={className} style={style}
 >
-    <CategoryTree categories={categoryTree} client:only="svelte" />
+    {categoryTree.map((cat) => (
+        <div class="category-item" style={{ marginBottom: '0.25rem' }}>
+            <a href={cat.url} class="flex items-center justify-between py-1 text-sm hover:text-[var(--primary)] transition-colors">
+                <span>{cat.name}</span>
+                <span class="text-xs text-black/40 dark:text-white/40">{cat.count}</span>
+            </a>
+        </div>
+    ))}
 </WidgetLayout>

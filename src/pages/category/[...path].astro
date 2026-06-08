@@ -4,7 +4,12 @@ import CategoryTree from "@components/widget/CategoryTree.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getCategoryList, getSortedPosts } from "@utils/content-utils";
+import {
+	type CategoryTreeNode,
+	getCategoryList,
+	getCategoryTree,
+	getSortedPosts,
+} from "@utils/content-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
 
 export async function getStaticPaths() {
@@ -18,14 +23,30 @@ export async function getStaticPaths() {
 const { category } = Astro.props;
 const posts = await getSortedPosts();
 const allCategories = await getCategoryList();
+const categoryTree = await getCategoryTree();
 
 // 获取当前分类路径
 const currentPath = category.fullPath;
 
-// 获取直接子分类（一级子分类）
-const directChildren = allCategories.filter(
-	(cat) => cat.parent === currentPath,
-);
+// 从树形结构中找到当前分类及其子分类
+function findCategoryNode(
+	nodes: CategoryTreeNode[],
+	path: string,
+): CategoryTreeNode | null {
+	for (const node of nodes) {
+		if (node.fullPath === path) {
+			return node;
+		}
+		if (node.children && node.children.length > 0) {
+			const found = findCategoryNode(node.children, path);
+			if (found) return found;
+		}
+	}
+	return null;
+}
+
+const currentCategoryNode = findCategoryNode(categoryTree, currentPath);
+const directChildren = currentCategoryNode?.children || [];
 
 // 获取当前分类下的文章（包括子分类的文章）
 const filteredPosts = posts.filter((post) => {
