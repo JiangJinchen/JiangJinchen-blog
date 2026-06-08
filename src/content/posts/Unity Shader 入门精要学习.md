@@ -8,202 +8,247 @@ category: '学习笔记'
 draft: false 
 lang: ''
 ---
-# 从零实现 Maya 樱花树绽放特效
+# 半透明物体的渲染
 
-## 前言
+## 知识点
 
-这篇教程基于《Maya Visual Effects》经典案例，以****n 粒子动力学 + 几何体实例化 + Mel 表达式****为核心技术栈，一步步实现樱花树从花苞到完全绽放的动态效果。
+**整体思路**
+1. 先渲染所有不透明物体，开启深度测试和深度写入
+2. 把所有半透明物体按他们距离摄像机的远近进行排序，然后按照从后往前的顺序渲染。开启深度测试，但关闭深度写入
 
-## 一、项目准备：
+**仍然存在的问题**
+1. 深度测试是逐像素比较，而排序是逐物体的，即要么A排在B前面，要么B排在A前面。如果AB存在循环重叠/互相遮挡，则永远得不到正确的排序结果。
+2. 物体可能涵盖多个像素，每个像素的深度可能都不一致，选用哪一个像素的深度代表物体的深度，可能得到不同的深度排序结果。
 
-### 1.1 软件准备
+**解决思路**
+将物体分割，对分割后的物体再进行深度排序。尽可能让模型是凸面体，并且考虑将复杂模型拆分成可以独立排序的多个子模型。如果不想分割，可以让透明通道更为柔和，使穿插看起来不那么明显。也可使用开启了深度写入的半透明效果。
 
-MAYA 2027（中文版）
+## 快速开始
 
-### 1.2 基础场景文件准备
+## 透明度测试
+片元的透明度大于阈值则保留，完全显示；否则舍弃，完全不显示。
+1. 顶点着色器：顶点变换、UV变换、计算世界法线和世界顶点坐标。
+2. 片元着色器：获取顶点着色器传入的世界法线和世界顶点坐标，根据UV采样透明度纹理，使用纹理采样结果的A通道值确定是否保留该片元。综合各项信息计算光照。
 
-我们需要提前准备以下素材，确保项目流程顺畅：
-
-场景文件（cherryTreeStart.ma）。包含：
-
--   ****樱花树模型****：命名为`cherryTree`，确保模型无破面、无重复顶点，为后续顶点选择和粒子发射做准备。
--   ****花朵绽放序列****：命名为`blossom00`~`blossom07`，共 8 个模型，对应从花苞到完全绽放的 8 个阶段，按顺序排列。
--   ****地面模型****：用于场景环境搭建。
-
-### 1.2 关键术语前置科普
-
-在开始操作前，我先理解了这几个核心概念：
-
-| 术语                      | 通俗解释                         | 本项目中的作用               |
-| ----------------------- | ---------------------------- | --------------------- |
-| nParticle               | Maya 的动力学粒子系统，支持碰撞、表达式控制、实例化 | 作为花朵载体，控制绽放时机和速度      |
-| 几何体实例化（Instancer）       | 用单个粒子控制多个模型序列切换，实现动画效果       | 让粒子依次显示花苞到绽放的花朵模型     |
-| 每粒子（Per-Particle）属性     | 每个粒子独立拥有的属性，可通过表达式单独控制       | 契合美术需求，实现每朵花独立的绽放进度   |
-| 被动碰撞器（Passive Collider） | 不主动运动但能被粒子检测到的碰撞体            | 控制花朵生成的时机，模拟从内到外绽放的效果 |
-
-## 二、步骤 1：精准选择树枝顶点
-
-这一步是整个效果的基础，我们只希望****树枝末梢****发射粒子，避免树干也长出花朵。
-
-### 2.1 操作步骤
-
-1.  选中樱花树模型`cherryTree`，右键点击模型，在弹出菜单中选择「边（Edge）」模式，进入边组件编辑状态。此时，整棵樱花树的所有边都被选中。
-2.  打开顶部菜单栏「选择 → 使用约束选择」，点击右侧的小方块（选项盒），打开约束设置窗口。
-3.  在窗口中展开「几何图形 → 长度」，勾选「激活」，设置「最大值」为`0.01`（这个数值根据你的模型大小调整，目标是只选中树枝末梢的短边）。
-4.  此时只有树枝末梢的边被选中，右键点击模型，选择「转换选择 → 到顶点」，将边选择转换为顶点选择。
-5.  勾选「显示 → 题头显示 → 多边形计数」，查看视图左上角的「顶点」统计数的第三列，本例为`5787`，记下这个数字，后续设置粒子数量会用到。
-
-### 2.3 进阶技巧：保存快速选择集
-
-为了后续能一键重新选中这些顶点，避免重复操作，我们创建一个快速选择集：
-
-1.  保持顶点选中状态，打开「创建 → 集 → 快速选择集」。
-2.  在弹出窗口中设置名称为`branchVertices`，点击「确定」。
-3.  后续需要重新选中这些顶点时，只需打开「选择 → 快速选择集 → branchVertices」即可。
-
-## 三、步骤 2：创建花蕾粒子
-
-我们将在选中的树枝顶点上创建粒子，作为后续花朵的载体。
-
-### 3.1 操作步骤
-
-1.  确保仍处于「FX」菜单集（可通过顶部菜单栏的下拉菜单切换）。
-2.  保持树枝顶点选中状态，打开「nParticles → 从对象发射」，点击右侧的小方块（选项盒），打开发射设置窗口。
-3.  在设置窗口中配置关键参数：
-4.  -   发射器名称：设置为`budEmitter`
-    -   发射器类型：选择「泛向」
-    -   发射位置：设置为「所有顶点」
-    -   速率：设置为`1`（每秒发射 1 个粒子，后续会用最大数量限制总粒子数）
-    -   速度：设置为`0`（粒子不会乱跑，固定在树枝顶点位置）
-5.  点击「创建」，完成粒子发射器的创建，大纲视图中会生成`nParticle1`节点，将其重命名为`buds`。
-
-### 3.2 粒子动力学基础设置
-
-选中`buds`粒子节点，打开右侧的属性编辑器（快捷键`Ctrl+A`），切换到`budsShape`标签页，配置以下关键参数：
-
-1.  ****动态属性****：勾选「忽略解算器重力（Ignore Solver Gravity）」，避免粒子被 Nucleus 解算器的重力影响而下落。
-2.  ****自发光属性（另请参见发射器选项卡）****：展开卷展栏，设置「Max Count（最大数量）」为之前记下的顶点数（本例为`5787`），确保粒子数量和树枝顶点数完全匹配。
-
-## 四、步骤 3：创建碰撞动画球
-
-我们将创建一个透明的碰撞球体，通过缩放动画控制粒子碰撞时机，实现花朵从内到外绽放的效果。（通过控制碰撞球体的transform属性，可以实现不同的绽放效果）
-
-### 4.1 操作步骤
-
-1.  打开「创建 → 多边形基本体 → 球体」，创建一个球体模型，命名为`collider`。
-2.  将球体移动到樱花树的中部枝桠处，确保初始位置在树的底部之外。
-3.  为球体设置缩放关键帧，控制其从下往上逐渐扩大：
-4.  -   第 1 帧：设置缩放为`0.1`，右键点击「Scale X/Y/Z」通道，选择「设置关键帧」。
-    -   第 100 帧：设置缩放为`10`（根据树的大小调整，确保球体在第 100 帧能完全包裹整棵树），****再次设置关键帧****。
-5.  选中球体，打开「nCloth → 创建被动碰撞器」，将球体转换为 n 粒子的碰撞体。
-6.  为球体赋予透明材质，让其在视图中不可见但仍能被粒子检测到：
-7.  -   右键球体 → 「指定收藏材质 → Lambert」，打开材质属性编辑器。
-    -   在「公用材质属性」中，将「透明度」设置为纯白色（RGB 均为 1），此时球体在视图中会变为透明状态。
-
-## 五、步骤 4：粒子碰撞事件
-
-我们将设置粒子碰撞事件，让花蕾粒子碰到碰撞球体后，生成新的花朵粒子。
-
-### 5.1 操作步骤
-
-1.  选中`buds`粒子节点，打开「nParticles → 粒子碰撞事件编辑器」。
-2.  在编辑器中配置以下关键参数：
-3.  -   事件类型：选择「分裂（Split）」（粒子碰撞后分裂生成新粒子）
-    -   粒子数量：设置为`1`（每次碰撞生成 1 个新粒子）
-    -   扩散：设置为`0`（新粒子不会散开，保持在碰撞位置）
-    -   继承速度：设置为`0`（新粒子不继承原粒子的速度，保持静止）
-4.  点击「创建事件」，完成碰撞事件的设置，大纲视图中会生成新的粒子节点，将其重命名为`blossoms`。
-
-### 5.2 花朵粒子基础设置
-
-选中`blossoms`粒子节点，打开属性编辑器，切换到`blossomsShape`标签页，配置以下参数：
-
-1.  ****碰撞设置****：展开「碰撞」卷展栏，取消勾选「碰撞」和「自碰撞」，避免花朵粒子与碰撞球体或其他花朵发生碰撞。
-2.  ****动力学设置****：展开「动态属性」卷展栏，勾选「忽略解算器重力」，避免花朵粒子下落。
-3.  ****着色设置****：展开「着色」卷展栏，将「粒子渲染类型」设置为「Point（点）」，「不透明度」设置为`0`。注意：这里不要直接关闭粒子的可见性，否则动力学解算会失效，通过设置不透明度为 0，既能让粒子不可见，又能保证后续实例化效果正常显示。
-
-## 六、步骤 5：几何体实例化
-
-我们将用`blossoms`粒子实例化花朵序列模型，实现花朵从花苞到绽放的效果。
-
-### 6.1 操作步骤
-
-1.  在大纲视图中，按顺序选中花朵序列模型`blossom00`~`blossom07`（按住 Shift 键依次点击，确保顺序正确）。
-2.  打开「nParticles → 实例化器（几何体替换）」，点击右侧的小方块（选项盒），打开实例化设置窗口。
-3.  在设置窗口中，点击「添加选择」，将选中的花朵模型添加到实例化列表中，设置「循环」为「无」，点击「创建」，完成实例化器的创建，大纲视图中会生成`instancer1`节点。
-
-## 七、步骤 6：表达式控制花朵绽放
-
-我们将通过自定义每粒子属性和 Mel 表达式，控制每个花朵的绽放进度，实现从花苞到完全绽放的动画效果。
-
-### 7.1 添加自定义每粒子属性
-
-1.  选中`blossoms`粒子节点，打开属性编辑器，切换到`blossomsShape`标签页。
-2.  展开「每粒子（数组）属性」卷展栏，点击「添加动态属性 → 常规」，打开「添加属性」窗口。
-3.  在窗口中切换到「新建」标签页，配置以下参数：
-4.  -   长名称：设置为`instanceStep`
-    -   数据类型：选择「Float（浮点数）」
-    -   属性类型：选择「每粒子（数组）」（核心设置！确保每个粒子都有独立的`instanceStep`值）
-5.  点击「确定」，完成属性添加，此时在「每粒子（数组）属性」卷展栏中会出现`Instance Step`属性。
-
-### 7.2 创建表达式
-
-#### 7.2.1 创建表达式（粒子出生时执行）
-
-1.  打开「窗口 → 常规编辑器 → 表达式编辑器」。
-2.  在编辑器中，「对象」选择`blossomsShape`，「属性」选择`instanceStep`，「粒子」选项选择「创建」。
-3.  在下方的表达式输入框中，输入：
-
-    ```
-    instanceStep = 0;
-    ```
-    
-4.  点击「创建」，完成创建表达式的设置，确保表达式已保存。
-
-#### 7.2.2 运行时表达式（粒子存活的每一帧执行）
-
-1.  同样在表达式编辑器中，「粒子」选项选择「运行时动力学前」。
-2.  在下方的表达式输入框中，输入：  
-    ```
-    if (instanceStep < 9) {  
-        instanceStep++;  
+```glsl
+Shader "Unlit/Chapter8-AlphaTest"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Color Tint",Color) = (1,1,1,1)
+        _Cutoff("Alpha Cutoff",Range(0,1)) = 0.5
     }
-    ```
-    
-3.  发现软件似乎会在instanceStep前面自动添加blossomsShape.的前缀。但是并不影响实现。
-4.  点击「创建」，完成运行时表达式的设置，此时每个粒子的`instanceStep`值会从 0 开始，每帧增加 1，直到达到 8（对应花朵序列的最后一个模型）。
-5.  如果觉得花朵绽放速度过快，几帧就完成了，可以修改表达式，让`instanceStep`每几帧增加 1，例如：
-    ```
-    if (instanceStep < 9 && frame % 3 == 0) {  
-        instanceStep++;  
+    SubShader
+    {
+        Tags { "RenderType"="TransparentCutout" "Queue" = "AlphaTest" "IgnoreProjector" = "True" }//透明度测试的三个标签
+
+        Pass
+        {
+            Tags {"LightMode" = "ForwardBase"}//必须声明前向渲染模式才能得到一些Unity内置的光照变量
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Lighting.cginc"//必须声明这个头文件以获取灯光的信息
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            fixed _Cutoff;
+
+            struct a2v
+            {
+                float4 vertex : POSITION;
+                float2 texcoord : TEXCOORD0;
+                float3 normal:NORMAL;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 pos : SV_POSITION;
+                float3 worldNormal:TEXCOORD1;
+                float3 worldPos:TEXCOORD2;
+            };
+
+            v2f vert (a2v v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);//注意这两个变换法线和变换坐标的方法
+                o.worldPos = mul(unity_ObjectToWorld,v.vertex).xyz;
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                float3 worldNormal=normalize(i.worldNormal);
+                float3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));//注意这个获取世界坐标系下光的方向的方法
+                fixed4 texColor=tex2D(_MainTex,i.uv);
+                fixed3 albedo=texColor.rgb*_Color.rgb;
+                clip(texColor.a-_Cutoff);//进行透明度测试的核心操作
+                fixed3 ambient=UNITY_LIGHTMODEL_AMBIENT.xyz*albedo;
+                fixed3 diffuse=_LightColor0.rgb*albedo*saturate(dot(worldNormal,worldLightDir));
+                return fixed4(ambient+diffuse,1.0);
+            }
+            ENDCG
+        }
     }
-    ```
-这样每 3 帧`instanceStep`才会增加 1，放慢绽放速度。
+}
+```
+[![](https://temp.aoki.dpdns.org/temp/1511731a974f885e75f3ec3ab9b188c2.png)](https://temp.aoki.dpdns.org/temp/1511731a974f885e75f3ec3ab9b188c2.png)
 
-### 7.3 绑定表达式到实例化器
+## 透明度混合
+将当前片元的透明度作为混合因子，与已经存储在颜色缓冲中的颜色值进行混合（使用混合命令完成）
+1. 顶点着色器：顶点变换、UV变换、计算世界法线和世界顶点坐标。
+2. 片元着色器：接收顶点着色器的世界法线和世界顶点坐标，使用UV采样透明度纹理，使用采样结果的颜色值计算光照，使用采样结果的透明度值作为片元的透明度值。GPU 按 Blend 指令自动叠色。
 
-1.  回到`blossomsShape`标签页，展开「实例化器（几何体替换）」卷展栏。
-2.  找到「对象索引（Object Index）」选项，在下拉菜单中选择我们创建的`Instance Step`属性。这一步的作用是让实例化器根据每个粒子的`instanceStep`值，自动切换对应的花朵模型，实现绽放效果。
+```glsl
+Shader "Unlit/Chapter8-AlphaTest"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Color Tint",Color) = (1,1,1,1)
+        _AlphaScale ("Alpha Scale",range(0,1)) = 0.5//控制透明度混合的程度
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Transparent" "Queue" = "Transparent" "IgnoreProjector" = "True" }//透明度混合的三个标签
 
-## 八、步骤 7：解决花朵颜色不显示问题
+        Pass
+        {
+            Tags {"LightMode" = "ForwardBase"}
+            ZWrite Off//记得关闭深度写入
+            Blend SrcAlpha OneMinusSrcAlpha//声明混合模式，没有这一行BLEND命令，即使代码写正确，也不会看到混合效果。因为默认情况下是BLEND OFF即没有混合，新片元颜色值会覆盖旧片元颜色值，效果就是完全不透明。
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
 
-效果实现之后，我发现花朵模型并不显示颜色，而场景中其他模型却能正常显示。
+            #include "Lighting.cginc"
 
-分析之后发现视图未开启纹理显示。解决：点击视图顶部的「着色」菜单，勾选「硬件纹理」，同时点击「对所有项目进行平滑着色处理」，确保模型以平滑着色模式显示。
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            fixed _AlphaScale;
 
-## 九、最终效果调试与优化
+            struct a2v
+            {
+                float4 vertex : POSITION;
+                float2 texcoord : TEXCOORD0;
+                float3 normal:NORMAL;
+            };
 
-1.  ****调整绽放时机****：修改碰撞球体的缩放动画关键帧，控制球体扩大的速度，从而控制花朵从下往上绽放的节奏。
-2.  ****调整绽放速度****：修改运行时表达式，通过增加条件判断（如`frame % 3 == 0`）放慢或加快`instanceStep`的增长速度。
-3.  ****调整花朵分布****：修改树枝顶点的选择范围，或调整粒子发射器的速率，控制花朵的密度和分布位置。
-4.  ****添加灯光效果****：为场景添加点光源或区域光，调整灯光强度和颜色，让花朵模型的颜色在视图中更清晰。
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 pos : SV_POSITION;
+                float3 worldNormal:TEXCOORD1;
+                float3 worldPos:TEXCOORD2;
+            };
 
-## 十、项目复盘
+            v2f vert (a2v v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                o.worldPos = mul(unity_ObjectToWorld,v.vertex).xyz;
+                return o;
+            }
 
-这个樱花树绽放特效项目，练习并使用了以下关键技术：
+            fixed4 frag (v2f i) : SV_Target
+            {
+                float3 worldNormal=normalize(i.worldNormal);
+                float3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                fixed4 texColor=tex2D(_MainTex,i.uv);
+                fixed3 albedo=texColor.rgb*_Color.rgb;
+                fixed3 ambient=UNITY_LIGHTMODEL_AMBIENT.xyz*albedo;
+                fixed3 diffuse=_LightColor0.rgb*albedo*saturate(dot(worldNormal,worldLightDir));
+                return fixed4(ambient+diffuse,texColor.a*_AlphaScale);//片元着色器只输出带透明度值的片元颜色值即可，GPU自动读取并进行混合操作
+            }
+            ENDCG
+        }
+    }
+}
+```
+![](https://temp.aoki.dpdns.org/temp/acd97fbf0cb72bada8774de58433d54c.png)
 
--   精准的顶点选择与快速选择集的应用，体现了对模型组件操作的熟练度。
--   n 粒子动力学系统的使用，包括发射设置、碰撞事件、被动碰撞器的创建。
--   几何体实例化技术，实现了单个粒子控制多模型序列动画的效果。
--   自定义每粒子属性与 Mel 表达式的结合，实现了粒子级别的独立控制，解决了序列动画同步的问题。
--   透明碰撞体与关键帧动画的结合，实现了自然的从下往上绽放的效果。
+## 开启深度写入的半透明效果
+解决模型跨度大、相互遮挡、自遮挡时逐物体的深度排序失效，且不想进行模型分割。分两步渲染，第一步只写入深度，记录整个场景中半透明物体的深度情况；第二步正常渲染半透明颜色。由于第一步已经得到了正确的、完整的逐像素的深度信息，所以这一步的颜色渲染的结果也是正确的。
+```glsl
+Shader "Unlit/Chapter8-AlphaTest"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Color Tint",Color) = (1,1,1,1)
+        _AlphaScale ("Alpha Scale",range(0,1)) = 0.5
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Transparent" "Queue" = "Transparent" "IgnoreProjector" = "True" }//透明度测试的三个标签
+
+        Pass{
+            Zwrite On//写入深度缓冲
+            ColorMask 0//不输出任何颜色
+        }
+
+        Pass
+        {
+            Tags {"LightMode" = "ForwardBase"}
+            ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Lighting.cginc"
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            fixed _AlphaScale;
+
+            struct a2v
+            {
+                float4 vertex : POSITION;
+                float2 texcoord : TEXCOORD0;
+                float3 normal:NORMAL;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 pos : SV_POSITION;
+                float3 worldNormal:TEXCOORD1;
+                float3 worldPos:TEXCOORD2;
+            };
+
+            v2f vert (a2v v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                o.worldPos = mul(unity_ObjectToWorld,v.vertex).xyz;
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                float3 worldNormal=normalize(i.worldNormal);
+                float3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                fixed4 texColor=tex2D(_MainTex,i.uv);
+                fixed3 albedo=texColor.rgb*_Color.rgb;
+                fixed3 ambient=UNITY_LIGHTMODEL_AMBIENT.xyz*albedo;
+                fixed3 diffuse=_LightColor0.rgb*albedo*saturate(dot(worldNormal,worldLightDir));
+                return fixed4(ambient+diffuse,texColor.a*_AlphaScale);
+            }
+            ENDCG
+        }
+    }
+}
+```
