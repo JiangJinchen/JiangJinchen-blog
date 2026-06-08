@@ -87,28 +87,37 @@ export async function getCategoryList(): Promise<Category[]> {
 	});
 
 	const count: { [key: string]: number } = {};
+	const childCounts: { [key: string]: number } = {};
+
 	allBlogPosts.forEach((post) => {
 		const category = post.data.category ?? i18n(I18nKey.uncategorized);
 		count[category] = (count[category] ?? 0) + 1;
 
-		// 同时统计父分类的数量
+		// 记录子分类数量（用于父分类）
 		const parts = category.split("/");
-		for (let i = 1; i < parts.length; i++) {
-			const parentPath = parts.slice(0, i).join("/");
-			count[parentPath] = (count[parentPath] ?? 0) + 1;
+		if (parts.length > 1) {
+			const parentPath = parts.slice(0, -1).join("/");
+			childCounts[parentPath] = (childCounts[parentPath] ?? 0) + 1;
 		}
 	});
 
-	const lst = Object.keys(count).sort((a, b) =>
+	// 收集所有分类路径（包括父分类）
+	const allPaths = new Set<string>(Object.keys(count));
+	for (const path of Object.keys(childCounts)) {
+		allPaths.add(path);
+	}
+
+	const lst = [...allPaths].sort((a, b) =>
 		a.toLowerCase().localeCompare(b.toLowerCase()),
 	);
 
 	const ret: Category[] = [];
 	for (const c of lst) {
 		const parts = c.split("/");
+		const isLeafCategory = c in count; // 是否是叶子分类（直接有文章的分类）
 		ret.push({
 			name: parts[parts.length - 1],
-			count: count[c],
+			count: isLeafCategory ? count[c] : (childCounts[c] ?? 0),
 			url: getCategoryUrl(c),
 			level: parts.length,
 			parent: parts.length > 1 ? parts.slice(0, -1).join("/") : undefined,
