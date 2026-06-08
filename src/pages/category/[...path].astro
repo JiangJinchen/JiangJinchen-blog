@@ -71,28 +71,20 @@ function getCategoryUrl(catPath: string): string {
 		))}
 	</div>
 
-	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-		<!-- 左侧：子分类列表 -->
-		<div class="lg:col-span-1">
-			<div class="card-base rounded-xl p-4">
-				<h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-					<span>{i18n(I18nKey.subCategories)}</span>
-					<span class="text-sm font-normal text-black/50 dark:text-white/50">
-						({directChildren.length})
-					</span>
-				</h3>
-				{directChildren.length > 0 ? (
-					<CategoryTree categories={directChildren} client:only="svelte" />
-				) : (
-					<p class="text-black/50 dark:text-white/50 text-sm">
-						{i18n(I18nKey.noSubCategories)}
-					</p>
-				)}
-			</div>
+	<!-- 如果有子分类，只显示子分类列表 -->
+	{directChildren.length > 0 ? (
+		<div class="card-base rounded-xl p-6">
+			<h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+				<span>{i18n(I18nKey.subCategories)}</span>
+				<span class="text-sm font-normal text-black/50 dark:text-white/50">
+					({directChildren.length})
+				</span>
+			</h3>
+			<CategoryTree categories={directChildren} client:only="svelte" />
 		</div>
-
-		<!-- 右侧：文章列表 -->
-		<div class="lg:col-span-2">
+	) : (
+		<!-- 没有子分类，显示文章列表 -->
+		<div>
 			<h3 class="font-bold text-lg mb-4 flex items-center gap-2">
 				<span>{i18n(I18nKey.posts)}</span>
 				<span class="text-sm font-normal text-black/50 dark:text-white/50">
@@ -125,5 +117,5 @@ function getCategoryUrl(catPath: string): string {
 				</div>
 			)}
 		</div>
-	</div>
+	)}
 </MainGridLayout>
