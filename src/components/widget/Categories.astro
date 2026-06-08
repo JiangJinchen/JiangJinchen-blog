@@ -2,7 +2,7 @@
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import { getCategoryTree } from "../../utils/content-utils";
-import CategoryTree from "./CategoryTree.astro";
+import CategoryTree from "./CategoryTree.svelte";
 import WidgetLayout from "./WidgetLayout.astro";
 
 const categoryTree = await getCategoryTree();
@@ -23,5 +23,5 @@ const style = Astro.props.style;
 <WidgetLayout name={i18n(I18nKey.categories)} id="categories" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT}
                 class={className} style={style}
 >
-    <CategoryTree categories={categoryTree} />
+    <CategoryTree categories={categoryTree} client:only="svelte" />
 </WidgetLayout>
