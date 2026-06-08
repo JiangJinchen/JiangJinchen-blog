@@ -1,12 +1,12 @@
 ---
 title: MAYA特效实操
 published: 2026-05-17
-description: ''
+description: '学习《Maya Visual Effects The Inn_ (Z-Library)》的笔记，包含案例实现'
 image: ''
-tags: []
-category: ''
+tags: [MAYA,VFX]
+category: '学习笔记'
 draft: false 
-lang: ''
+lang: 'zh'
 ---
 # 从零实现 Maya 樱花树绽放特效
 
