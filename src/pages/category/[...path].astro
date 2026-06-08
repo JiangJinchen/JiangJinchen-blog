@@ -62,16 +62,16 @@ function getCategoryUrl(catPath: string): string {
 	<div class="flex flex-wrap items-center gap-2 mb-6">
 		<a href="/" class="text-[var(--primary)] hover:underline">{i18n(I18nKey.home)}</a>
 		<span class="text-black/30 dark:text-white/30">/</span>
-		{#each breadcrumbs as crumb}
-			{#if crumb.isCurrent}
-				<span class="font-medium">{crumb.name}</span>
-			{:else}
+		{breadcrumbs.map((crumb, index) => crumb.isCurrent ? (
+			<span key={index} class="font-medium">{crumb.name}</span>
+		) : (
+			<span key={index}>
 				<a href={getCategoryUrl(crumb.path)} class="text-[var(--primary)] hover:underline">
 					{crumb.name}
 				</a>
 				<span class="text-black/30 dark:text-white/30">/</span>
-			{/if}
-		{/each}
+			</span>
+		))}
 	</div>
 
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -84,13 +84,13 @@ function getCategoryUrl(catPath: string): string {
 						({directChildren.length})
 					</span>
 				</h3>
-				{#if directChildren.length > 0}
+				{directChildren.length > 0 ? (
 					<CategoryTree categories={directChildren} client:only="svelte" />
-				{:else}
+				) : (
 					<p class="text-black/50 dark:text-white/50 text-sm">
 						{i18n(I18nKey.noSubCategories)}
 					</p>
-				{/if}
+				)}
 			</div>
 		</div>
 
@@ -102,9 +102,9 @@ function getCategoryUrl(catPath: string): string {
 					({filteredPosts.length})
 				</span>
 			</h3>
-			{#if filteredPosts.length > 0}
+			{filteredPosts.length > 0 ? (
 				<div class="space-y-4">
-					{#each filteredPosts as post}
+					{filteredPosts.map((post) => (
 						<PostCard
 							slug={post.slug}
 							title={post.data.title}
@@ -114,15 +114,15 @@ function getCategoryUrl(catPath: string): string {
 							category={post.data.category}
 							image={post.data.image}
 						/>
-					{/each}
+					))}
 				</div>
-			{:else}
+			) : (
 				<div class="card-base rounded-xl p-8 text-center">
 					<p class="text-black/50 dark:text-white/50">
 						{i18n(I18nKey.noPostsInCategory)}
 					</p>
 				</div>
-			{/if}
+			)}
 		</div>
 	</div>
 </MainGridLayout>
