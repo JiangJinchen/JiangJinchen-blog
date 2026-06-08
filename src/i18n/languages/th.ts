@@ -9,6 +9,7 @@ export const th: Translation = {
 
 	[Key.tags]: "ป้ายกำกับ",
 	[Key.categories]: "หมวดหมู่",
+	[Key.subCategories]: "หมวดหมู่ย่อย",
 	[Key.recentPosts]: "โพสต์ล่าสุด",
 
 	[Key.comments]: "ความคิดเห็น",
@@ -16,6 +17,7 @@ export const th: Translation = {
 	[Key.untitled]: "ไม่ได้ตั้งชื่อ",
 	[Key.uncategorized]: "ไม่ได้จัดหมวดหมู่",
 	[Key.noTags]: "ไม่มีป้ายกำกับ",
+	[Key.noSubCategories]: "ไม่มีหมวดหมู่ย่อย",
 
 	[Key.wordCount]: "คำ",
 	[Key.wordsCount]: "คำ",
@@ -23,6 +25,9 @@ export const th: Translation = {
 	[Key.minutesCount]: "นาที",
 	[Key.postCount]: "โพสต์",
 	[Key.postsCount]: "โพสต์",
+	[Key.posts]: "โพสต์",
+	[Key.category]: "หมวดหมู่",
+	[Key.noPostsInCategory]: "ไม่มีโพสต์ในหมวดหมู่นี้",
 
 	[Key.themeColor]: "สีของธีม",
 

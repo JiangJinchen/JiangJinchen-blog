@@ -9,6 +9,7 @@ export const tr: Translation = {
 
 	[Key.tags]: "Taglar",
 	[Key.categories]: "Katagoriler",
+	[Key.subCategories]: "Alt Kategoriler",
 	[Key.recentPosts]: "Son Paylaşımlar",
 
 	[Key.comments]: "Yorumlar",
@@ -16,6 +17,7 @@ export const tr: Translation = {
 	[Key.untitled]: "Başlıksız",
 	[Key.uncategorized]: "Katagorisiz",
 	[Key.noTags]: "Tag Bulunamadı",
+	[Key.noSubCategories]: "Alt Kategori Yok",
 
 	[Key.wordCount]: "kelime",
 	[Key.wordsCount]: "kelime",
@@ -23,6 +25,9 @@ export const tr: Translation = {
 	[Key.minutesCount]: "dakika",
 	[Key.postCount]: "gönderi",
 	[Key.postsCount]: "gönderiler",
+	[Key.posts]: "Gönderiler",
+	[Key.category]: "Kategori",
+	[Key.noPostsInCategory]: "Bu kategoride gönderi yok",
 
 	[Key.themeColor]: "Tema Rengi",
 

@@ -9,6 +9,7 @@ export const vi: Translation = {
 
 	[Key.tags]: "Thẻ",
 	[Key.categories]: "Danh mục",
+	[Key.subCategories]: "Phân mục con",
 	[Key.recentPosts]: "Bài viết mới nhất",
 
 	[Key.comments]: "Bình luận",
@@ -16,6 +17,7 @@ export const vi: Translation = {
 	[Key.untitled]: "Không tiêu đề",
 	[Key.uncategorized]: "Chưa phân loại",
 	[Key.noTags]: "Chưa có thẻ",
+	[Key.noSubCategories]: "Không có phân mục con",
 
 	[Key.wordCount]: "từ",
 	[Key.wordsCount]: "từ",
@@ -23,6 +25,9 @@ export const vi: Translation = {
 	[Key.minutesCount]: "phút đọc",
 	[Key.postCount]: "bài viết",
 	[Key.postsCount]: "bài viết",
+	[Key.posts]: "Bài viết",
+	[Key.category]: "Danh mục",
+	[Key.noPostsInCategory]: "Không có bài viết trong danh mục này",
 
 	[Key.themeColor]: "Màu giao diện",
 

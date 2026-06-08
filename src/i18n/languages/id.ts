@@ -9,6 +9,7 @@ export const id: Translation = {
 
 	[Key.tags]: "Tag",
 	[Key.categories]: "Kategori",
+	[Key.subCategories]: "Subkategori",
 	[Key.recentPosts]: "Postingan Terbaru",
 
 	[Key.comments]: "Komentar",
@@ -16,6 +17,7 @@ export const id: Translation = {
 	[Key.untitled]: "Tanpa Judul",
 	[Key.uncategorized]: "Tanpa Kategori",
 	[Key.noTags]: "Tanpa Tag",
+	[Key.noSubCategories]: "Tidak ada Subkategori",
 
 	[Key.wordCount]: "kata",
 	[Key.wordsCount]: "kata",
@@ -23,6 +25,9 @@ export const id: Translation = {
 	[Key.minutesCount]: "menit",
 	[Key.postCount]: "postingan",
 	[Key.postsCount]: "postingan",
+	[Key.posts]: "Postingan",
+	[Key.category]: "Kategori",
+	[Key.noPostsInCategory]: "Tidak ada postingan dalam kategori ini",
 
 	[Key.themeColor]: "Warna Tema",
 

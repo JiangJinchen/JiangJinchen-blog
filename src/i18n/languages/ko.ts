@@ -9,6 +9,7 @@ export const ko: Translation = {
 
 	[Key.tags]: "태그",
 	[Key.categories]: "카테고리",
+	[Key.subCategories]: "서브카테고리",
 	[Key.recentPosts]: "최근 게시물",
 
 	[Key.comments]: "댓글",
@@ -16,6 +17,7 @@ export const ko: Translation = {
 	[Key.untitled]: "제목 없음",
 	[Key.uncategorized]: "분류되지 않음",
 	[Key.noTags]: "태그 없음",
+	[Key.noSubCategories]: "서브카테고리 없음",
 
 	[Key.wordCount]: "단어",
 	[Key.wordsCount]: "단어",
@@ -23,6 +25,9 @@ export const ko: Translation = {
 	[Key.minutesCount]: "분",
 	[Key.postCount]: "게시물",
 	[Key.postsCount]: "게시물",
+	[Key.posts]: "게시물",
+	[Key.category]: "카테고리",
+	[Key.noPostsInCategory]: "이 카테고리에 게시물이 없습니다",
 
 	[Key.themeColor]: "테마 색상",
 

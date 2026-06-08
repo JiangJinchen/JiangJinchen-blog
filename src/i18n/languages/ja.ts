@@ -9,6 +9,7 @@ export const ja: Translation = {
 
 	[Key.tags]: "タグ",
 	[Key.categories]: "カテゴリ",
+	[Key.subCategories]: "サブカテゴリ",
 	[Key.recentPosts]: "最近の投稿",
 
 	[Key.comments]: "コメント",
@@ -16,6 +17,7 @@ export const ja: Translation = {
 	[Key.untitled]: "タイトルなし",
 	[Key.uncategorized]: "カテゴリなし",
 	[Key.noTags]: "タグなし",
+	[Key.noSubCategories]: "サブカテゴリなし",
 
 	[Key.wordCount]: "文字",
 	[Key.wordsCount]: "文字",
@@ -23,6 +25,9 @@ export const ja: Translation = {
 	[Key.minutesCount]: "分",
 	[Key.postCount]: "件の投稿",
 	[Key.postsCount]: "件の投稿",
+	[Key.posts]: "投稿",
+	[Key.category]: "カテゴリ",
+	[Key.noPostsInCategory]: "このカテゴリに投稿はありません",
 
 	[Key.themeColor]: "テーマカラー",
 
