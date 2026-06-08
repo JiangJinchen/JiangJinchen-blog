@@ -41,9 +41,9 @@ export const siteConfig: SiteConfig = {
 
 export const navBarConfig: NavBarConfig = {
 	links: [
-		LinkPreset.Home,//首页
-		LinkPreset.Archive,//归类
-		LinkPreset.About,//关于
+		LinkPreset.Home, //首页
+		LinkPreset.Archive, //归类
+		LinkPreset.About, //关于
 		{
 			name: "GitHub",
 			url: "https://github.com/JiangJinchen", // Internal links should not include the base path, as it is automatically added
