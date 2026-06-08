@@ -114,10 +114,24 @@ export async function getCategoryList(): Promise<Category[]> {
 	const ret: Category[] = [];
 	for (const c of lst) {
 		const parts = c.split("/");
-		const isLeafCategory = c in count; // 是否是叶子分类（直接有文章的分类）
+		const hasChildren = c in childCounts; // 是否有子分类
+		const hasPosts = c in count; // 是否有直接文章
+
+		let categoryCount: number;
+		if (hasChildren && hasPosts) {
+			// 如果既有子分类又有直接文章，显示总数量（子分类文章数 + 直接文章数）
+			categoryCount = (childCounts[c] ?? 0) + (count[c] ?? 0);
+		} else if (hasChildren) {
+			// 只有子分类，显示子分类数量
+			categoryCount = childCounts[c] ?? 0;
+		} else {
+			// 只有直接文章或无内容
+			categoryCount = count[c] ?? 0;
+		}
+
 		ret.push({
 			name: parts[parts.length - 1],
-			count: isLeafCategory ? count[c] : (childCounts[c] ?? 0),
+			count: categoryCount,
 			url: getCategoryUrl(c),
 			level: parts.length,
 			parent: parts.length > 1 ? parts.slice(0, -1).join("/") : undefined,
@@ -136,11 +150,14 @@ export async function getCategoryTree(): Promise<CategoryTreeNode[]> {
 	const categoryMap = new Map<string, CategoryTreeNode>();
 	const rootCategories: CategoryTreeNode[] = [];
 
-	categories.forEach((cat) => {
+	// 首先按层级排序，确保父分类在子分类之前处理
+	const sortedCategories = [...categories].sort((a, b) => a.level - b.level);
+
+	sortedCategories.forEach((cat) => {
 		categoryMap.set(cat.fullPath, { ...cat, children: [] });
 	});
 
-	categories.forEach((cat) => {
+	sortedCategories.forEach((cat) => {
 		const node = categoryMap.get(cat.fullPath);
 		if (!node) return;
 		if (cat.parent && categoryMap.has(cat.parent)) {
