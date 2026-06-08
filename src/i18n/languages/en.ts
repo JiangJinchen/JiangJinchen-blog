@@ -9,6 +9,7 @@ export const en: Translation = {
 
 	[Key.tags]: "Tags",
 	[Key.categories]: "Categories",
+	[Key.subCategories]: "Subcategories",
 	[Key.recentPosts]: "Recent Posts",
 
 	[Key.comments]: "Comments",
@@ -16,6 +17,7 @@ export const en: Translation = {
 	[Key.untitled]: "Untitled",
 	[Key.uncategorized]: "Uncategorized",
 	[Key.noTags]: "No Tags",
+	[Key.noSubCategories]: "No subcategories",
 
 	[Key.wordCount]: "word",
 	[Key.wordsCount]: "words",
@@ -23,6 +25,9 @@ export const en: Translation = {
 	[Key.minutesCount]: "minutes",
 	[Key.postCount]: "post",
 	[Key.postsCount]: "posts",
+	[Key.posts]: "Posts",
+	[Key.category]: "Category",
+	[Key.noPostsInCategory]: "No posts in this category",
 
 	[Key.themeColor]: "Theme Color",
 

@@ -9,6 +9,7 @@ export const zh_CN: Translation = {
 
 	[Key.tags]: "标签",
 	[Key.categories]: "分类",
+	[Key.subCategories]: "子分类",
 	[Key.recentPosts]: "最新文章",
 
 	[Key.comments]: "评论",
@@ -16,6 +17,7 @@ export const zh_CN: Translation = {
 	[Key.untitled]: "无标题",
 	[Key.uncategorized]: "未分类",
 	[Key.noTags]: "无标签",
+	[Key.noSubCategories]: "无子分类",
 
 	[Key.wordCount]: "字",
 	[Key.wordsCount]: "字",
@@ -23,6 +25,9 @@ export const zh_CN: Translation = {
 	[Key.minutesCount]: "分钟",
 	[Key.postCount]: "篇文章",
 	[Key.postsCount]: "篇文章",
+	[Key.posts]: "文章",
+	[Key.category]: "分类",
+	[Key.noPostsInCategory]: "该分类下暂无文章",
 
 	[Key.themeColor]: "主题色",
 

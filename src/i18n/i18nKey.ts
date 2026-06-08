@@ -6,6 +6,7 @@ enum I18nKey {
 
 	tags = "tags",
 	categories = "categories",
+	subCategories = "subCategories",
 	recentPosts = "recentPosts",
 
 	comments = "comments",
@@ -13,6 +14,7 @@ enum I18nKey {
 	untitled = "untitled",
 	uncategorized = "uncategorized",
 	noTags = "noTags",
+	noSubCategories = "noSubCategories",
 
 	wordCount = "wordCount",
 	wordsCount = "wordsCount",
@@ -20,6 +22,9 @@ enum I18nKey {
 	minutesCount = "minutesCount",
 	postCount = "postCount",
 	postsCount = "postsCount",
+	posts = "posts",
+	category = "category",
+	noPostsInCategory = "noPostsInCategory",
 
 	themeColor = "themeColor",
 

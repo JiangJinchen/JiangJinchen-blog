@@ -19,12 +19,8 @@ const { category } = Astro.props;
 const posts = await getSortedPosts();
 const allCategories = await getCategoryList();
 
-// 获取当前分类及其所有子分类
+// 获取当前分类路径
 const currentPath = category.fullPath;
-const subCategories = allCategories.filter(
-	(cat) =>
-		cat.parent === currentPath || cat.fullPath.startsWith(`${currentPath}/`),
-);
 
 // 获取直接子分类（一级子分类）
 const directChildren = allCategories.filter(
@@ -63,10 +59,10 @@ function getCategoryUrl(catPath: string): string {
 	<div class="flex flex-wrap items-center gap-2 mb-6">
 		<a href="/" class="text-[var(--primary)] hover:underline">{i18n(I18nKey.home)}</a>
 		<span class="text-black/30 dark:text-white/30">/</span>
-		{breadcrumbs.map((crumb, index) => crumb.isCurrent ? (
-			<span key={index} class="font-medium">{crumb.name}</span>
+		{breadcrumbs.map((crumb) => crumb.isCurrent ? (
+			<span class="font-medium">{crumb.name}</span>
 		) : (
-			<span key={index}>
+			<span>
 				<a href={getCategoryUrl(crumb.path)} class="text-[var(--primary)] hover:underline">
 					{crumb.name}
 				</a>
