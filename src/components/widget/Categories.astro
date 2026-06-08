@@ -6,6 +6,7 @@ import CategoryTree from "./CategoryTree.svelte";
 import WidgetLayout from "./WidgetLayout.astro";
 
 const categoryTree = await getCategoryTree();
+console.log("[DEBUG] Categories.astro - categoryTree:", categoryTree);
 
 const COLLAPSED_HEIGHT = "7.5rem";
 const COLLAPSE_THRESHOLD = 5;
