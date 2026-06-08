@@ -86,12 +86,6 @@ export async function getCategoryList(): Promise<Category[]> {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
 
-	console.log("[DEBUG] getCategoryList - allBlogPosts:", allBlogPosts.length);
-	console.log(
-		"[DEBUG] allBlogPosts categories:",
-		allBlogPosts.map((p) => p.data.category),
-	);
-
 	const count: { [key: string]: number } = {};
 	const childCounts: { [key: string]: number } = {};
 
@@ -107,16 +101,11 @@ export async function getCategoryList(): Promise<Category[]> {
 		}
 	});
 
-	console.log("[DEBUG] count:", count);
-	console.log("[DEBUG] childCounts:", childCounts);
-
 	// 收集所有分类路径（包括父分类）
 	const allPaths = new Set<string>(Object.keys(count));
 	for (const path of Object.keys(childCounts)) {
 		allPaths.add(path);
 	}
-
-	console.log("[DEBUG] allPaths:", [...allPaths]);
 
 	const lst = [...allPaths].sort((a, b) =>
 		a.toLowerCase().localeCompare(b.toLowerCase()),
@@ -150,7 +139,6 @@ export async function getCategoryList(): Promise<Category[]> {
 		});
 	}
 
-	console.log("[DEBUG] getCategoryList result:", ret);
 	return ret;
 }
 
@@ -160,22 +148,11 @@ export type CategoryTreeNode = Category & {
 
 export async function getCategoryTree(): Promise<CategoryTreeNode[]> {
 	const categories = await getCategoryList();
-	console.log("[DEBUG] getCategoryTree - categories:", categories);
-
 	const categoryMap = new Map<string, CategoryTreeNode>();
 	const rootCategories: CategoryTreeNode[] = [];
 
 	// 首先按层级排序，确保父分类在子分类之前处理
 	const sortedCategories = [...categories].sort((a, b) => a.level - b.level);
-	console.log(
-		"[DEBUG] getCategoryTree - sortedCategories:",
-		sortedCategories.map((c) => ({
-			name: c.name,
-			level: c.level,
-			parent: c.parent,
-		})),
-	);
-
 	sortedCategories.forEach((cat) => {
 		categoryMap.set(cat.fullPath, { ...cat, children: [] });
 	});
@@ -196,6 +173,5 @@ export async function getCategoryTree(): Promise<CategoryTreeNode[]> {
 		}
 	});
 
-	console.log("[DEBUG] getCategoryTree - rootCategories:", rootCategories);
 	return rootCategories;
 }
