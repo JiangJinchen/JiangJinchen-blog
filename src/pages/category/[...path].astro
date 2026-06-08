@@ -4,7 +4,8 @@ import CategoryTree from "@components/widget/CategoryTree.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getCategoryList, getSortedPostsList } from "@utils/content-utils";
+import { getCategoryList, getSortedPosts } from "@utils/content-utils";
+import { getPostUrlBySlug } from "@utils/url-utils";
 
 export async function getStaticPaths() {
 	const categories = await getCategoryList();
@@ -15,7 +16,7 @@ export async function getStaticPaths() {
 }
 
 const { category } = Astro.props;
-const posts = await getSortedPostsList();
+const posts = await getSortedPosts();
 const allCategories = await getCategoryList();
 
 // 获取当前分类及其所有子分类
@@ -106,13 +107,17 @@ function getCategoryUrl(catPath: string): string {
 				<div class="space-y-4">
 					{filteredPosts.map((post) => (
 						<PostCard
-							slug={post.slug}
+							entry={post}
 							title={post.data.title}
-							description={post.data.description}
-							published={post.data.published}
 							tags={post.data.tags}
-							category={post.data.category}
+							category={post.data.category ?? undefined}
+							published={post.data.published}
+							updated={post.data.updated}
+							url={getPostUrlBySlug(post.slug)}
 							image={post.data.image}
+							description={post.data.description}
+							draft={post.data.draft}
+							style=""
 						/>
 					))}
 				</div>
