@@ -76,8 +76,8 @@ export type Category = {
 	name: string;
 	count: number;
 	url: string;
-	level: number; 
-	parent?: string; 
+	level: number;
+	parent?: string;
 };
 
 export async function getCategoryList(): Promise<Category[]> {
@@ -92,7 +92,7 @@ export async function getCategoryList(): Promise<Category[]> {
 	});
 
 	const lst = Object.keys(count).sort((a, b) =>
-		a.toLowerCase().localeCompare(b.toLowerCase())
+		a.toLowerCase().localeCompare(b.toLowerCase()),
 	);
 
 	const ret: Category[] = [];
