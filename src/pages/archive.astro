@@ -12,6 +12,8 @@ import {
 const sortedPostsList = await getSortedPostsList();
 const allTags = await getTagList();
 const allCategories = await getCategoryList();
+const topCategories = allCategories.filter(c => c.level === 1);
+const subCategories = allCategories.filter(c => c.level === 2);
 
 const tagNames = allTags.map((t) => t.name);
 const categoryNames = allCategories.map((c) => c.name);
@@ -28,9 +30,10 @@ const fixedPosts = sortedPostsList.map((post) => ({
 <MainGridLayout title={i18n(I18nKey.archive)}>
   <ArchivePanel
     sortedPosts={fixedPosts}
-    tags={tagNames}
-    categories={categoryNames}
-    client:only="svelte"
+	tags={tagNames}
+	topCategories={topCategories}
+	subCategories={subCategories}
+	client:only="svelte"
   />
 </MainGridLayout>
 

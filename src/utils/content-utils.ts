@@ -76,36 +76,34 @@ export type Category = {
 	name: string;
 	count: number;
 	url: string;
+	level: number; 
+	parent?: string; 
 };
 
 export async function getCategoryList(): Promise<Category[]> {
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
+
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post) => {
-		const category = post.data.category ?? undefined;
-
-		if (!category || category.trim() === "") {
-			const ucKey = i18n(I18nKey.uncategorized);
-			count[ucKey] = (count[ucKey] ?? 0) + 1;
-			return;
-		}
-
-		const categoryName = category.trim();
-		count[categoryName] = (count[categoryName] ?? 0) + 1;
+		const category = post.data.category ?? i18n(I18nKey.uncategorized);
+		count[category] = (count[category] ?? 0) + 1;
 	});
 
-	const lst = Object.keys(count).sort((a, b) => {
-		return a.toLowerCase().localeCompare(b.toLowerCase());
-	});
+	const lst = Object.keys(count).sort((a, b) =>
+		a.toLowerCase().localeCompare(b.toLowerCase())
+	);
 
 	const ret: Category[] = [];
 	for (const c of lst) {
+		const parts = c.split("/");
 		ret.push({
 			name: c,
 			count: count[c],
 			url: getCategoryUrl(c),
+			level: parts.length,
+			parent: parts.length > 1 ? parts[0] : undefined,
 		});
 	}
 	return ret;
