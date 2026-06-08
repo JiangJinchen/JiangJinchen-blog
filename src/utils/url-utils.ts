@@ -25,8 +25,7 @@ export function getCategoryUrl(category?: string): string {
 	if (
 		!category ||
 		category.trim() === "" ||
-		category.trim().toLowerCase() ===
-			i18n(I18nKey.uncategorized).toLowerCase()
+		category.trim().toLowerCase() === i18n(I18nKey.uncategorized).toLowerCase()
 	) {
 		return url("/archive/?uncategorized=true");
 	}
