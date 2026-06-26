@@ -1,9 +1,18 @@
-# About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
+# About Me
 
-::github{repo="saicaca/fuwari"}
+Welcome to my personal blog! I'm JiangJinchen, a software developer passionate about game development, graphics programming, and creative coding.
 
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
+## Interests
+
+- **Game Development**: Unity, Unreal Engine, Maya scripting
+- **Graphics Programming**: Shaders, OpenGL, rendering techniques
+- **Software Engineering**: Full-stack development, clean code practices
+
+## Connect
+
+You can find me on:
+
+- [GitHub](https://github.com/JiangJinchen)
+- Twitter: [@jiangjinchen](https://twitter.com)
+
+Thanks for visiting! 😊
