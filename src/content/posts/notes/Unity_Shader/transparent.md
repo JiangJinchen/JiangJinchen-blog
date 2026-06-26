@@ -1,7 +1,7 @@
 ---
-title: 半透明物体的渲染
+title: 透明效果
 published: 2026-05-14
-description: '《Unity Shader 入门精要》第8章第1节'
+description: '《Unity Shader 入门精要》第8章'
 image: ''
 tags: [Unity]
 category: '学习笔记/Unity Shader 入门精要'
@@ -96,7 +96,7 @@ Shader "Unlit/Chapter8-AlphaTest"
     }
 }
 ```
-[![](https://temp.aoki.dpdns.org/temp/1511731a974f885e75f3ec3ab9b188c2.png)](https://temp.aoki.dpdns.org/temp/1511731a974f885e75f3ec3ab9b188c2.png)
+![](https://bee-reg-ab.imagency.cn/e/1511731a974f885e75f3ec3ab9b188c2.png)
 
 ## 透明度混合
 将当前片元的透明度作为混合因子，与已经存储在颜色缓冲中的颜色值进行混合（使用混合命令完成）
@@ -172,7 +172,7 @@ Shader "Unlit/Chapter8-AlphaTest"
     }
 }
 ```
-![](https://temp.aoki.dpdns.org/temp/acd97fbf0cb72bada8774de58433d54c.png)
+![](https://bee-reg-ab.imagency.cn/e/acd97fbf0cb72bada8774de58433d54c.png)
 
 ## 开启深度写入的半透明效果
 解决模型跨度大、相互遮挡、自遮挡时逐物体的深度排序失效，且不想进行模型分割。分两步渲染，第一步只写入深度，记录整个场景中半透明物体的深度情况；第二步正常渲染半透明颜色。由于第一步已经得到了正确的、完整的逐像素的深度信息，所以这一步的颜色渲染的结果也是正确的。
@@ -250,3 +250,205 @@ Shader "Unlit/Chapter8-AlphaTest"
     }
 }
 ```
+
+## 双面渲染
+使用Cull指令来控制需要剔除哪个面的渲染图元：Cull Back |  Front | Off，分别对应剔除背面（默认）、剔除正面和不剔除（双面渲染）。
+### 透明度测试的双面渲染
+在透明度测试的代码中，在Pass内加上Cull Off，关闭剔除。
+```glsl
+Shader "Unlit/Chapter8-AlphaTest"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Color Tint",Color) = (1,1,1,1)
+        _Cutoff("Alpha Cutoff",Range(0,1)) = 0.5
+    }
+    SubShader
+    {
+        Tags { "RenderType"="TransparentCutout" "Queue" = "AlphaTest" "IgnoreProjector" = "True" }//透明度测试的三个标签
+
+        Pass
+        {
+            Tags {"LightMode" = "ForwardBase"}//必须声明前向渲染模式才能得到一些Unity内置的光照变量
+            Cull Off
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Lighting.cginc"//必须声明这个头文件以获取灯光的信息
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            fixed _Cutoff;
+
+            struct a2v
+            {
+                float4 vertex : POSITION;
+                float2 texcoord : TEXCOORD0;
+                float3 normal:NORMAL;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 pos : SV_POSITION;
+                float3 worldNormal:TEXCOORD1;
+                float3 worldPos:TEXCOORD2;
+            };
+
+            v2f vert (a2v v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);//注意这两个变换法线和变换坐标的方法
+                o.worldPos = mul(unity_ObjectToWorld,v.vertex).xyz;
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                float3 worldNormal=normalize(i.worldNormal);
+                float3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));//注意这个获取世界坐标系下光的方向的方法
+                fixed4 texColor=tex2D(_MainTex,i.uv);
+                fixed3 albedo=texColor.rgb*_Color.rgb;
+                clip(texColor.a-_Cutoff);//进行透明度测试的核心操作
+                fixed3 ambient=UNITY_LIGHTMODEL_AMBIENT.xyz*albedo;
+                fixed3 diffuse=_LightColor0.rgb*albedo*saturate(dot(worldNormal,worldLightDir));
+                return fixed4(ambient+diffuse,1.0);
+            }
+            ENDCG
+        }
+    }
+}
+```
+### 透明度混合的双面渲染
+由于透明度混合关闭了深度写入，因此如果仅开启双面渲染，背面和正面的渲染顺序是未知的、不可控的，可能出现背面遮挡正面的不合理情况。所以需要两个Pass，第一个pass渲染背面，第二个pass渲染正面。两个pass的透明度混合的代码完全相同，只是第一个pass内剔除指令为Cull Front，第二个pass内剔除指令为Cull Back。
+```glsl
+Shader "Unlit/Chapter8-AlphaTest"
+{
+    Properties
+    {
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Color Tint",Color) = (1,1,1,1)
+        _AlphaScale ("Alpha Scale",range(0,1)) = 0.5
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Transparent" "Queue" = "Transparent" "IgnoreProjector" = "True" }//透明度测试的三个标签
+
+        Pass
+        {
+            Tags {"LightMode" = "ForwardBase"}
+            Cull Front//剔除正面，渲染背面
+            ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Lighting.cginc"
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            fixed _AlphaScale;
+
+            struct a2v
+            {
+                float4 vertex : POSITION;
+                float2 texcoord : TEXCOORD0;
+                float3 normal:NORMAL;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 pos : SV_POSITION;
+                float3 worldNormal:TEXCOORD1;
+                float3 worldPos:TEXCOORD2;
+            };
+
+            v2f vert (a2v v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                o.worldPos = mul(unity_ObjectToWorld,v.vertex).xyz;
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                float3 worldNormal=normalize(i.worldNormal);
+                float3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                fixed4 texColor=tex2D(_MainTex,i.uv);
+                fixed3 albedo=texColor.rgb*_Color.rgb;
+                fixed3 ambient=UNITY_LIGHTMODEL_AMBIENT.xyz*albedo;
+                fixed3 diffuse=_LightColor0.rgb*albedo*saturate(dot(worldNormal,worldLightDir));
+                return fixed4(ambient+diffuse,texColor.a*_AlphaScale);
+            }
+            ENDCG
+        }
+
+        Pass
+        {
+            Tags {"LightMode" = "ForwardBase"}
+            Cull Back//剔除背面，渲染正面
+            ZWrite Off
+            Blend SrcAlpha OneMinusSrcAlpha
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Lighting.cginc"
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            fixed _AlphaScale;
+
+            struct a2v
+            {
+                float4 vertex : POSITION;
+                float2 texcoord : TEXCOORD0;
+                float3 normal:NORMAL;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 pos : SV_POSITION;
+                float3 worldNormal:TEXCOORD1;
+                float3 worldPos:TEXCOORD2;
+            };
+
+            v2f vert (a2v v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                o.worldPos = mul(unity_ObjectToWorld,v.vertex).xyz;
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                float3 worldNormal=normalize(i.worldNormal);
+                float3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                fixed4 texColor=tex2D(_MainTex,i.uv);
+                fixed3 albedo=texColor.rgb*_Color.rgb;
+                fixed3 ambient=UNITY_LIGHTMODEL_AMBIENT.xyz*albedo;
+                fixed3 diffuse=_LightColor0.rgb*albedo*saturate(dot(worldNormal,worldLightDir));
+                return fixed4(ambient+diffuse,texColor.a*_AlphaScale);
+            }
+            ENDCG
+        }
+    }
+}
+```
+![](https://bee-reg-ab.imagency.cn/e/a9aaf58547096c9759c3b840f7d32642.png)
