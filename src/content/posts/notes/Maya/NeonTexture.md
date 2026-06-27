@@ -56,4 +56,4 @@ lang: 'zh'
 如需调整灯管粗细、发光颜色、粒子密度，分别修改` Stroke` 笔刷参数、Ramp 色值、发射速率曲线。
 # 实验技术总结
 本实验采用笔刷生成模型 + 渐变纹理自发光 + 驱动关键帧一体化绑定 + 曲线跟随动力学粒子流程，区别于传统逐节点手动 K 帧工作流。自定义单控制器 Rig 大幅降低后期修改成本；同时结合节点编辑器、动画曲线编辑器完成多属性联动时序校准。
-[![广告牌 texture](https://img.naixiai.cn/2026/06/27/_texture.fr.jpeg)](https://naixiai.cn/video/%E5%B9%BF%E5%91%8A%E7%89%8C-texture.LdlUR)
+![BQACAgUAAyEGAASHRsPbAAEWMA5qP69iKNACEyErrtSjsnyIRTBK_wACCCEAAq3j-FUFu0Ir1YZ0jDwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWMA5qP69iKNACEyErrtSjsnyIRTBK_wACCCEAAq3j-FUFu0Ir1YZ0jDwE.png)
