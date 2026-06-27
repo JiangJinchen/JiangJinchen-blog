@@ -1,7 +1,7 @@
 ---
 title: Shader
 published: 2026-06-21
-description: 'Learn OpenGL 第一章第二节'
+description: 'Learn OpenGL 第一章第五节'
 image: ''
 tags: [OpenGL]
 category: '学习笔记/OpenGL'
@@ -59,7 +59,7 @@ GLSL 通过专属关键字区分着色器输入、输出变量，严格限定读
 
 uniform 变量无法自动链接传递，使用前必须遵循固定流程：首先通过 `glGetUniformLocation`（原文笔误修正：非 glGetAttribLocation）函数，传入着色器程序对象与变量名，查询获取 uniform 变量的位置索引；再激活对应着色器程序，最终完成变量的修改与使用。
 
-# example1:uniform变量的使用
+# example1: uniform变量的使用
 这是一个全局变量，在顶点/片元着色器内部定义，在C++代码处/着色器内部赋值。无需靠两个着色器之间的传递。注意：赋值uniform变量前需要查询uniform变量的位置，这就要用到`glGetAttribLocation`函数，传入着色器程序名和要查询的变量名，然后激活对应的着色器程序，才能进行修改和使用。
 ```c
 #include <glad/glad.h>

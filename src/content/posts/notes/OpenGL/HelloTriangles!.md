@@ -1,7 +1,7 @@
 ---
 title: Hello,Triangles!
 published: 2026-06-21
-description: 'Learn OpenGL 第一章第一节'
+description: 'Learn OpenGL 第一章第四节'
 image: ''
 tags: [OpenGL]
 category: '学习笔记/OpenGL'
