@@ -8,6 +8,10 @@ category: '学习笔记/MAYA'
 draft: false 
 lang: 'zh'
 ---
+<video width="100%" controls>
+  <source src="/videos/草叶水珠_ncloth.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 # 实验概述
 ## 实验目的
 本次实验为商业广告镜头制作清晨露珠从草叶顶端缓慢滑落的写实动态效果，镜头核心画面是阳光照射下的主草叶，水珠滴落撞击草叶后让草叶产生自然回弹晃动，最终水珠顺着弯曲草叶滚落。

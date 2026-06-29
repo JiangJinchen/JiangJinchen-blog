@@ -11,7 +11,10 @@ lang: 'zh'
 # 前言
 
 这篇教程基于《Maya Visual Effects》经典案例，以**n 粒子动力学 + 几何体实例化 + Mel 表达式**为核心技术栈，一步步实现樱花树从花苞到完全绽放的动态效果。
-
+<video width="100%" controls>
+  <source src="/videos/樱花树_nParticle.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 # 一、项目准备：
 
 ## 1.1 软件准备
@@ -205,6 +208,3 @@ MAYA 2027（中文版）
 -   几何体实例化技术，实现了单个粒子控制多模型序列动画的效果。
 -   自定义每粒子属性与 Mel 表达式的结合，实现了粒子级别的独立控制，解决了序列动画同步的问题。
 -   透明碰撞体与关键帧动画的结合，实现了自然的从下往上绽放的效果。
-
-
-[![樱花树 nParticle](https://img.naixiai.cn/2026/06/27/_nParticle.fr.jpeg)](https://naixiai.cn/video/%E6%A8%B1%E8%8A%B1%E6%A0%91-nParticle.LdykC)
