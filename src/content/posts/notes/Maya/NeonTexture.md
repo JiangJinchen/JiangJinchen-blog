@@ -8,10 +8,6 @@ category: '学习笔记/MAYA'
 draft: false 
 lang: 'zh'
 ---
-<video width="100%" controls>
-  <source src="/videos/广告牌_texture.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
 # 实验概述
 ## 实验目的
 基于 Autodesk Maya 软件完成破败酒店 “Vacancy” 霓虹招牌流动发光特效制作，实现核心效果：霓虹灯光沿招牌字母从 V 向末尾匀速流动，总时长约 1 秒；灯光前端同步生成火花粒子跟随光源行进。
@@ -60,3 +56,7 @@ lang: 'zh'
 如需调整灯管粗细、发光颜色、粒子密度，分别修改` Stroke` 笔刷参数、Ramp 色值、发射速率曲线。
 # 实验技术总结
 本实验采用笔刷生成模型 + 渐变纹理自发光 + 驱动关键帧一体化绑定 + 曲线跟随动力学粒子流程，区别于传统逐节点手动 K 帧工作流。自定义单控制器 Rig 大幅降低后期修改成本；同时结合节点编辑器、动画曲线编辑器完成多属性联动时序校准。
+<video width="100%" controls>
+  <source src="/videos/广告牌_texture.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>

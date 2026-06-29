@@ -8,10 +8,6 @@ category: '学习笔记/MAYA'
 draft: false 
 lang: 'zh'
 ---
-<video width="100%" controls>
-  <source src="/videos/草叶水珠_ncloth.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
 # 实验概述
 ## 实验目的
 本次实验为商业广告镜头制作清晨露珠从草叶顶端缓慢滑落的写实动态效果，镜头核心画面是阳光照射下的主草叶，水珠滴落撞击草叶后让草叶产生自然回弹晃动，最终水珠顺着弯曲草叶滚落。
@@ -71,4 +67,7 @@ lang: 'zh'
 4. 打开动画曲线编辑器选中场景时间扭曲曲线，拖动曲线末端关键帧向下压低，整体放慢动画速度；
 # 实验技术总结
 本实验跳出传统流体仿真制作液体效果的思路，使用 `nCloth` 布料解算低成本模拟水滴流体动态，同时结合骨骼绑定动画、顶点权重混合动力学，兼顾手动动画精准可控与物理仿真真实感。整套特效最大优势在于分层可控，草叶基础摆动靠控制器关键帧、物理形变靠顶点权重、整体播放速度靠时间扭曲。
-[![草叶水珠 ncloth](https://img.naixiai.cn/2026/06/27/_ncloth.fr.jpeg)](https://naixiai.cn/video/%E8%8D%89%E5%8F%B6%E6%B0%B4%E7%8F%A0-ncloth.Ldlbf)
+<video width="100%" controls>
+  <source src="/videos/草叶水珠_ncloth.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>

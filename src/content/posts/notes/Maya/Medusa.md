@@ -8,10 +8,6 @@ category: '学习笔记/MAYA'
 draft: false 
 lang: 'zh'
 ---
-<video width="100%" controls>
-  <source src="/videos/美杜莎_Fur.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
 # 实验概述
 ## 实验目的
 本次实验为动画电影喜剧镜头制作美杜莎蛇发动态交互特效，镜头剧情为蝙蝠飞入浴室环绕美杜莎头部，头顶多条蛇发受蝙蝠引力主动追逐、互相缠绕纠缠。
@@ -57,3 +53,7 @@ lang: 'zh'
 3. 完整回放动画，蛇发追逐蝙蝠时互相缠绕，同时被外层球体阻挡，不会穿透美杜莎脸部。
 # 实验技术总结
 本实验结合传统动画 IK 绑定与 nHair 毛发动力学、n 粒子集群模拟，实现可交互自动追逐的软体蛇发动态特效，摆脱传统逐帧手动 K 动画的低效制作方式。
+<video width="100%" controls>
+  <source src="/videos/美杜莎_Fur.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
