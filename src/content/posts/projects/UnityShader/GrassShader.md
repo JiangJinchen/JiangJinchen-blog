@@ -53,9 +53,10 @@ o.pos = UnityObjectToClipPos(float4(0.5,0,1));
 ```
 **现象**：地面所有顶点生成完全重叠的草，只能看见一株；
 **修复**：所有草顶点基于当前细分顶点`IN[0].vertex`做偏移，每株草根部绑定网格点。
-
+![BQACAgUAAyEGAASHRsPbAAEWaJ9qRI-ltOm05BEP3aQ-AAG5lnJPtmAAAnIoAAIDcClWoyzXMILfmoo8BA.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaJ9qRI-ltOm05BEP3aQ-AAG5lnJPtmAAAnIoAAIDcClWoyzXMILfmoo8BA.png)
 ### 1.3 踩坑3：固定Y向上，球体曲面草生长错乱
 平面模型Y=向上正常，但球体每个顶点法线四面八方，硬编码Y轴向上会导致草垂直模型本地Y，不沿曲面凸起。
+![BQACAgUAAyEGAASHRsPbAAEWaKNqRI_FKwm1ObhjG6XjrIsVD5PhaQACdygAAgNwKVYgwnZsQ9QDQjwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaKNqRI_FKwm1ObhjG6XjrIsVD5PhaQACdygAAgNwKVYgwnZsQ9QDQjwE.png)
 **解决方案：切线空间TBN矩阵**
 1. 从细分顶点读取`normal、tangent`，叉乘计算副法线binormal；
 2. 构造`tangentToLocal`变换矩阵：在切线空间定义标准草叶，再整体旋转到曲面朝向；
@@ -74,7 +75,7 @@ float3x3 tangentToLocal = float3x3(
 	vTangent.z, vBinormal.z, vNormal.z
 );
 ```
-
+![BQACAgUAAyEGAASHRsPbAAEWaKhqRI_xv930HYJbmi6EvJwfCbDhfgACfigAAgNwKVbN03RKowHB1TwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaKhqRI_xv930HYJbmi6EvJwfCbDhfgACfigAAgNwKVbN03RKowHB1TwE.png)
 ## 阶段2：草叶多样化随机系统
 ### 2.1 三维伪随机rand函数
 基于经典sin-frac噪声，使用不同分量swizzle更换种子，避免多个随机值强绑定：
@@ -107,8 +108,10 @@ float3x3 AngleAxis3x3(float angle, float3 axis)
 
 ### 2.3 三层旋转矩阵叠加（矩阵乘法顺序从右至左）
 1. **facingRotationMatrix**：绕Z(法线)随机旋转0~360°，每株草朝向不同；
+![BQACAgUAAyEGAASHRsPbAAEWaK5qRJAtfF9KXDBJEv5xiHHJhl9vxgAChCgAAgNwKVYriGaqV1nHHTwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaK5qRJAtfF9KXDBJEv5xiHHJhl9vxgAChCgAAgNwKVYriGaqV1nHHTwE.png)
 2. **bendRotationMatrix**：绕-X轴0~90°向前倒伏；
    > 绕-X而非+X：旋转区间0~90°仅向前弯，不会向后弯折；如需双向改为`(rand-0.5)*PI`；
+![BQACAgUAAyEGAASHRsPbAAEWaLNqRJBUdHFeaYl1SjD9rzDUsqUeYwACiSgAAgNwKVbJVyablYyIBTwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaLNqRJBUdHFeaYl1SjD9rzDUsqUeYwACiSgAAgNwKVbJVyablYyIBTwE.png)
 3. **windRotation**：风场动态旋转，实时摆动。
 
 ```hlsl
@@ -123,14 +126,16 @@ float height = (rand(pos.zyx)*2-1)*_BladeHeightRandom + _BladeHeight;
 float width = (rand(pos.xzy)*2-1)*_BladeWidthRandom + _BladeWidth;
 ```
 `rand()*2-1`将0~1映射为-1~1，实现上下浮动随机。
-
+![BQACAgUAAyEGAASHRsPbAAEWaLlqRJB1wD6j2QLmGogfHraM2SVlKgACjygAAgNwKVZA_3xt2t37hTwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaLlqRJB1wD6j2QLmGogfHraM2SVlKgACjygAAgNwKVZA_3xt2t37hTwE.png)
+![BQACAgUAAyEGAASHRsPbAAEWaL5qRJCeah0Gt6SknsekiveBbQ_OjgAClSgAAgNwKVYTpUDUBcwOvTwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaL5qRJCeah0Gt6SknsekiveBbQ_OjgAClSgAAgNwKVYTpUDUBcwOvTwE.png)
 ## 阶段3：多段弧形草叶
 单三角形草僵硬，分段构造三角条带实现自然弯曲：
 1. 宏定义`#define BLADE_SEGMENTS 3`分段数量；
 2. `[maxvertexcount(BLADE_SEGMENTS*2+1)]`声明最大输出顶点；
 3. 循环每层输出左右两点，最后追加顶部尖端；
+![BQACAgUAAyEGAASHRsPbAAEWaM1qRJIK3LkufMX_0ego1dkrP7r_BwACpygAAgNwKVadnQTxTIoM7DwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaM1qRJIK3LkufMX_0ego1dkrP7r_BwACpygAAgNwKVadnQTxTIoM7DwE.png)
 4. `pow(t,_BladeCurve)`非线性弯曲：底部弯曲极小，草尖弯曲幅度大。
-
+![BQACAgUAAyEGAASHRsPbAAEWaM9qRJJJB8hlXO0-q1k6xcO-alWRGwACqigAAgNwKVbn3H6r9ZXOuDwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaM9qRJJJB8hlXO0-q1k6xcO-alWRGwACqigAAgNwKVbn3H6r9ZXOuDwE.png)
 ```hlsl
 float t = i/(float)BLADE_SEGMENTS;
 float segmentHeight = height*t;
@@ -155,7 +160,7 @@ triStream.Append(GenerateGrassVertex(pos,-segmentWidth,segmentHeight,segmentForw
 #pragma domain domain
 ```
 优势：美术直接滑动参数控制草地疏密，不需要修改网格模型。
-
+![BQACAgUAAyEGAASHRsPbAAEWaMBqRJDMB27LNdmsGb1gl0Cfbl_mTAAClygAAgNwKVYWIkxVT60Y3DwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaMBqRJDMB27LNdmsGb1gl0Cfbl_mTAAClygAAgNwKVYWIkxVT60Y3DwE.png)
 ## 阶段5 全局连贯风场扰动
 ### 5.1 关键设计：不用模型UV，改用世界XZ坐标采样
 - 模型UV仅单块0~1区间，多块草地风会割裂；
@@ -169,7 +174,7 @@ float3 wind = normalize(float3(windSample.x,windSample.y,0));
 float3x3 windRotation = AngleAxis3x3(UNITY_PI*windSample,wind);
 ```
 > GS禁止普通tex2，必须使用带mip的`tex2Dlod`。
-
+![BQACAgUAAyEGAASHRsPbAAEWaMJqRJDdOaJ8rTLv9OgavX8ce3CK-AACmSgAAgNwKVY7Kyh_GnLH9DwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaMJqRJDdOaJ8rTLv9OgavX8ce3CK-AACmSgAAgNwKVY7Kyh_GnLH9DwE.png)
 ### 5.2 草根固定优化
 底部两段顶点不叠加风、倒伏矩阵，仅保留自身旋转，根部牢牢贴地面，不会随风飘离地形。
 
@@ -215,8 +220,10 @@ Pass{
 	ENDCG
 }
 ```
+![BQACAgUAAyEGAASHRsPbAAEWaNFqRJJ_RtxcUtJCtJEDWYmEZBkuyAACrCgAAgNwKVZT9J2DPgcCczwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaNFqRJJ_RtxcUtJCtJEDWYmEZBkuyAACrCgAAgNwKVZT9J2DPgcCczwE.png)
 #### shadow acne解决
 薄面片深度值几乎与ShadowMap存储深度重合，浮点精度误差造成自遮挡黑斑。
+![BQACAgUAAyEGAASHRsPbAAEWaNNqRJK-ywKahR7CmW2M6J5xNQWonQACrygAAgNwKVZEQDW9vCcQNTwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaNNqRJK-ywKahR7CmW2M6J5xNQWonQACrygAAgNwKVZEQDW9vCcQNTwE.png)
 仅在阴影通道对裁剪空间顶点偏移：
 ```hlsl
 #if UNITY_PASS_SHADOWCASTER
@@ -225,7 +232,7 @@ Pass{
 ```
 - 仅修改阴影几何体，Forward画面模型坐标不变；
 - 内置斜率自适应偏移，斜面偏移更大，平面偏移小，避免Peter Panning（影子飘离物体）。
-
+![BQACAgUAAyEGAASHRsPbAAEWaNZqRJLSev7jou937HVIJYDKhoNv1gACsigAAgNwKVYy8ZE4fTIqljwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaNZqRJLSev7jou937HVIJYDKhoNv1gACsigAAgNwKVYy8ZE4fTIqljwE.png)
 ### 7.2 ForwardBase接收阴影通道
 #### 1. 阴影坐标传递
 放弃`SHADOW_COORDS`宏（CGINCLUDE全局结构体造成ShadowCaster编译报错），手动定义`unityShadowCoord4 _ShadowCoord`：
@@ -247,10 +254,11 @@ geometryOutput VertexOutput(xxx){
 #pragma multi_compile_fwdbase // 开启屏幕阴影、级联阴影变体
 float shadow = SHADOW_ATTENUATION(i);
 ```
-
+![BQACAgUAAyEGAASHRsPbAAEWaNJqRJKe79K1gAU8jtDv0XXB7pUEJgACrigAAgNwKVamrb1cyXZM2DwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaNJqRJKe79K1gAU8jtDv0XXB7pUEJgACrigAAgNwKVamrb1cyXZM2DwE.png)
 ### 7.3 叶片边缘锯齿成因与优化
 - MSAA多重抗锯齿仅作用颜色缓冲区，**阴影贴图无MSAA**；
 - 画面平滑像素采样硬边界阴影，出现毛刺；
+![BQACAgUAAyEGAASHRsPbAAEWaNdqRJMGvHVfIyfjync1crkY7jPYngACsygAAgNwKVYjLIHyTWj0ZTwE.png](https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEWaNdqRJMGvHVfIyfjync1crkY7jPYngACsygAAgNwKVYjLIHyTWj0ZTwE.png)
 优化方案：
 1. 后处理TAA/FXAA全局柔化边缘；
 2. 阴影采样PCF多纹素滤波软化边界。
